@@ -99,9 +99,9 @@ jobs:
         if: ${{ env.DEPLOY_TRIGGER_COMMAND != '' }}
         run: |
           set -euo pipefail
-          # Execute the deploy command from the repository variable.
-          # Note: For enhanced security, consider using a checked-in script
-          # instead of a dynamic command string.
+          # SECURITY NOTE: Using eval on repository variables requires repository
+          # write access. For enhanced security, replace this with a checked-in
+          # script that accepts validated parameters instead of dynamic commands.
           eval "${DEPLOY_TRIGGER_COMMAND}"
 
       - name: Wait for application health endpoint
@@ -145,6 +145,7 @@ jobs:
             --output text \
             --query 'length(events)' || echo "0")
 
+          # Check for empty, None (defensive), or 0
           if [ -z "${matches}" ] || [ "${matches}" = "None" ] || [ "${matches}" = "0" ]; then
             echo "No matching app logs found in CloudWatch."
             exit 1
