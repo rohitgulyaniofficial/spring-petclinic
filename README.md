@@ -48,6 +48,35 @@ There is no `Dockerfile` in this project. You can build a container image (if yo
 ./mvnw spring-boot:build-image
 ```
 
+## AWS smoke deploy workflow (GHCR + CloudWatch)
+
+This repository includes a GitHub Actions workflow at
+`.github/workflows/aws-smoke-ghcr.yml` for smoke-deploying a containerized
+Petclinic build into AWS infrastructure while pushing the image to GitHub
+Container Registry (GHCR).
+
+The workflow:
+
+1. Builds and publishes `ghcr.io/<owner>/<repo>:<tag>` using
+   `spring-boot:build-image`.
+2. Uses GitHub OIDC to assume an AWS role.
+3. Optionally runs an infra-specific deploy command (`DEPLOY_TRIGGER_COMMAND`).
+4. Executes an HTTP smoke test against `SMOKE_URL`.
+5. Validates that application logs are present in CloudWatch Logs, assuming a
+   fluent-bit agent is already forwarding Docker stdout logs.
+
+Required repository variables:
+
+- `AWS_REGION`
+- `AWS_ROLE_TO_ASSUME`
+- `SMOKE_URL`
+- `CLOUDWATCH_LOG_GROUP`
+- `CLOUDWATCH_LOG_QUERY`
+
+Optional repository variable:
+
+- `DEPLOY_TRIGGER_COMMAND` (for example, an ECS/EKS update command)
+
 ## In case you find a bug/suggested improvement for Spring Petclinic
 
 Our issue tracker is available [here](https://github.com/spring-projects/spring-petclinic/issues).
